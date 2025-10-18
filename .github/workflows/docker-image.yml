@@ -10,46 +10,65 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # Checkout the code
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # Set up Docker Buildx for multi-platform builds
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
+      # Login to DockerHub
       - name: Login to DockerHub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_SECRET }}
 
+      # Build and push the backend Docker image
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: ./backend-springbootapp
-          file: ./backend-springbootapp/backend.dockerfile
+          file: ./backend-springbootapp/Dockerfile  # Ensure the correct filename here
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-backend:latest
 
+      # Build and push the frontend Docker image
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend-reactapp
-          file: ./frontend-reactapp/frontend.dockerfile
+          file: ./frontend-reactapp/Dockerfile  # Ensure the correct filename here
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
+      # Save the EC2 private key to a file
       - name: Save EC2 private key
         run: |
           echo "${{ secrets.AWS_KEY }}" > private_key.pem
           chmod 600 private_key.pem
 
+      # Install Docker Compose (if not already installed on EC2)
+      - name: Install Docker Compose on EC2
+        run: |
+          ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.AWS_IP }} << 'EOF'
+            curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+            docker-compose --version  # Check docker-compose version
+          EOF
+
+      # Deploy to EC2 instance
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.AWS_IP }} << 'EOF'
+            # Navigate to project folder or clone if it doesn't exist
             cd DEVOPS-EXAM-2300033639 || git clone https://github.com/${{ github.repository }}.git
             cd DEVOPS-EXAM-2300033639
-            git pull origin main
+            git pull origin main  # Ensure the latest code is pulled
+
+            # Stop any running containers and update with new ones
             sudo docker-compose down
             sudo docker-compose pull
-            sudo docker-compose up -d --build
+            sudo docker-compose up -d --build  # Rebuild and restart containers in detached mode
           EOF
