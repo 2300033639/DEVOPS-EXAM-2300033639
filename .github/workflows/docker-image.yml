@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./backend-springbootapp
-          file: ./backend-springbootapp/Dockerfile  # Ensure the correct filename here
+          file: ./backend-springbootapp/Dockerfile  # Ensure correct filename and path
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-backend:latest
 
@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend-reactapp
-          file: ./frontend-reactapp/Dockerfile  # Ensure the correct filename here
+          file: ./frontend-reactapp/Dockerfile  # Ensure correct filename and path
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
@@ -53,9 +53,19 @@ jobs:
       - name: Install Docker Compose on EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.AWS_IP }} << 'EOF'
-            curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-            docker-compose --version  # Check docker-compose version
+            # Ensure Docker is installed first
+            if ! command -v docker &> /dev/null; then
+              sudo yum install -y docker
+              sudo systemctl start docker
+              sudo systemctl enable docker
+            fi
+            
+            # Install Docker Compose
+            if ! command -v docker-compose &> /dev/null; then
+              curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+              sudo chmod +x /usr/local/bin/docker-compose
+              docker-compose --version  # Check docker-compose version
+            fi
           EOF
 
       # Deploy to EC2 instance
@@ -66,6 +76,12 @@ jobs:
             cd DEVOPS-EXAM-2300033639 || git clone https://github.com/${{ github.repository }}.git
             cd DEVOPS-EXAM-2300033639
             git pull origin main  # Ensure the latest code is pulled
+
+            # Check if docker-compose.yml exists
+            if [ ! -f "docker-compose.yml" ]; then
+              echo "docker-compose.yml not found!"
+              exit 1
+            fi
 
             # Stop any running containers and update with new ones
             sudo docker-compose down
