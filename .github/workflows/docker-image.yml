@@ -30,7 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./backend-springbootapp
-          file: ./backend-springbootapp/Dockerfile  # Ensure correct filename and path
+          file: ./backend-springbootapp/backend.dockerfile  # Ensure correct filename and path
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-backend:latest
 
@@ -39,7 +39,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend-reactapp
-          file: ./frontend-reactapp/Dockerfile  # Ensure correct filename and path
+          file: ./frontend-reactapp/frontend.dockerfile  # Ensure correct filename and path
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
