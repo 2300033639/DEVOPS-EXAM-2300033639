@@ -25,21 +25,27 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_SECRET }}
 
-      # Build and push the backend Docker image
+      # Debug folder structure (optional but helpful)
+      - name: Debug folder structure
+        run: |
+          pwd
+          ls -R
+
+      # ✅ Build and push the backend Docker image
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: ./backend-springbootapp
-          file: ./backend-springbootapp/backend.dockerfile  # Ensure correct filename and path
+          file: backend.dockerfile        # relative to context
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-backend:latest
 
-      # Build and push the frontend Docker image
+      # ✅ Build and push the frontend Docker image
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: ./frontend-reactapp
-          file: ./frontend-reactapp/frontend.dockerfile  # Ensure correct filename and path
+          file: frontend.dockerfile       # relative to context
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
@@ -59,32 +65,36 @@ jobs:
               sudo systemctl start docker
               sudo systemctl enable docker
             fi
-            
+
             # Install Docker Compose
             if ! command -v docker-compose &> /dev/null; then
-              curl -L https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+              curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
               sudo chmod +x /usr/local/bin/docker-compose
-              docker-compose --version  # Check docker-compose version
+              docker-compose --version
             fi
           EOF
 
-      # Deploy to EC2 instance
+      # ✅ Deploy to EC2 instance
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.AWS_IP }} << 'EOF'
             # Navigate to project folder or clone if it doesn't exist
-            cd DEVOPS-EXAM-2300033639 || git clone https://github.com/${{ github.repository }}.git
-            cd DEVOPS-EXAM-2300033639
-            git pull origin main  # Ensure the latest code is pulled
+            if [ -d "DEVOPS-EXAM-2300033639" ]; then
+              cd DEVOPS-EXAM-2300033639
+              git pull origin main
+            else
+              git clone https://github.com/${{ github.repository }}.git DEVOPS-EXAM-2300033639
+              cd DEVOPS-EXAM-2300033639
+            fi
 
-            # Check if docker-compose.yml exists
+            # Check for docker-compose.yml
             if [ ! -f "docker-compose.yml" ]; then
               echo "docker-compose.yml not found!"
               exit 1
             fi
 
-            # Stop any running containers and update with new ones
+            # Redeploy
             sudo docker-compose down
             sudo docker-compose pull
-            sudo docker-compose up -d --build  # Rebuild and restart containers in detached mode
+            sudo docker-compose up -d --build
           EOF
