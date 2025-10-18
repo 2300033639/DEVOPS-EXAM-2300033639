@@ -14,7 +14,7 @@ services:
     image: 2300033639/dockeraws1-backend:latest
     container_name: springboot
     ports:
-      - "2025:8080"
+      - "2025:2000"
     depends_on:
       - mysqldb
     restart: on-failure
