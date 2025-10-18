@@ -18,6 +18,6 @@ FROM eclipse-temurin:21-jdk
 WORKDIR /backend-springbootapp
 COPY --from=builder /backend-springbootapp/target/*.jar app.jar
 
-EXPOSE 2000
+EXPOSE 8080
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
