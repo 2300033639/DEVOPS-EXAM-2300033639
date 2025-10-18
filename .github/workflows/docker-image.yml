@@ -46,7 +46,7 @@ jobs:
         with:
           context: ./frontend-reactapp
           # CORRECTED PATH: Points to the Dockerfile inside the frontend folder
-          file: ./frontend-reactapp/frontend.Dockerfile
+          file: ./frontend-reactapp/frontend.dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
