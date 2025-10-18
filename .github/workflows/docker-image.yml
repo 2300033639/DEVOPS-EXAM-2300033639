@@ -31,7 +31,6 @@ jobs:
           pwd
           ls -R
 
-      # ✅ Build and push the backend Docker image
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
@@ -41,7 +40,7 @@ jobs:
           push: true
           tags: 2300033639/dockeraws-backend:latest
 
-      # ✅ Build and push the frontend Docker image
+      
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
@@ -76,7 +75,6 @@ jobs:
             fi
           EOF
 
-      # ✅ Deploy to EC2 instance
       - name: Deploy to AWS EC2
         run: |
           ssh -o StrictHostKeyChecking=no -i private_key.pem ec2-user@${{ secrets.AWS_IP }} << 'EOF'
