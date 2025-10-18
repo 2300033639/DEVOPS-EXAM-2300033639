@@ -15,9 +15,9 @@ RUN ./mvnw clean package -DskipTests
 
 # Stage 2: Run the app
 FROM eclipse-temurin:21-jdk
-WORKDIR /app
+WORKDIR /backend-springbootapp
 COPY --from=builder /backend-springbootapp/target/*.jar app.jar
 
-EXPOSE 200
+EXPOSE 2000
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
