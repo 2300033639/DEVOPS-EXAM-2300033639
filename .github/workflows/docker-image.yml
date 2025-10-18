@@ -31,11 +31,13 @@ jobs:
           pwd
           ls -R
 
+      # ✅ Build and push the backend Docker image
       - name: Build and push backend
         uses: docker/build-push-action@v6
         with:
           context: ./backend-springbootapp
-          file: backend.Dockerfile  # <-- This is the incorrect path
+          # CORRECTED PATH: Points to the Dockerfile inside the backend folder
+          file: ./backend-springbootapp/backend.Dockerfile
           push: true
           tags: 2300033639/dockeraws-backend:latest
 
@@ -44,7 +46,8 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: ./frontend-reactapp
-          file: frontend.Dockerfile       # relative to context
+          # CORRECTED PATH: Points to the Dockerfile inside the frontend folder
+          file: ./frontend-reactapp/frontend.Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
 
