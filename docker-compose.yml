@@ -3,27 +3,27 @@ services:
     image: mysql:8
     container_name: mysql-db
     environment:
-      MYSQL_ROOT_PASSWORD: docker
-      MYSQL_DATABASE: productdb
+      MYSQL_ROOT_PASSWORD: klu
+      MYSQL_DATABASE: projectdb
     ports:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 
   backend:
-    image: 2300033639/dockeraws1-backend:latest
+    image: 2300033639/projectaws-backend:latest
     container_name: springboot
     ports:
-      - "2025:2000"
+      - "2025:2098"
     depends_on:
       - mysqldb
     restart: on-failure
 
   frontend:
-    image: 2300033639/dockeraws1-frontend:latest
+    image: 2300033639/projectaws-frontend:latest
     container_name: react
     ports:
-      - "3000:80"
+      - "5000:80"
     depends_on:
       - backend
     restart: on-failure
