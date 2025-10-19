@@ -48,7 +48,7 @@ jobs:
           # CORRECTED PATH: Points to the Dockerfile inside the frontend folder
           file: ./frontend-reactapp/frontend.dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USER }}/dockeraws-frontend:latest
+          tags: 2300033639/dockeraws-frontend:latest
 
       # Save the EC2 private key to a file
       - name: Save EC2 private key
